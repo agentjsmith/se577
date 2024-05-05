@@ -5,8 +5,11 @@ in order to ensure the system achieves its goals of **Security**, **Low Run
 Cost**, and **Extensibility**.
 
 ## Decision 
-To meet all of these intersecting needs, we will write all system components in
+To meet all of these intersecting needs, we will write all core system components in
 Rust.
+
+Small utilities and services outside the critical path may use the Best Tool Available, in
+cases that Rust may not be suitable.
 
 ## Rationale 
 
@@ -26,34 +29,20 @@ supported method of being compiled to a WebAssembly Component.
 To keep the costs of running the system low, all components that need to scale
 must be written in a language that can be compiled to native code.
 
-### Rejected: Multiple Languages
+### Chosen: Rust
 
-Two languages as of now fit the bill: Go and Rust.
-
-Many programmers only like one of Go or Rust.  The languages have quite
-different priorities and values, some of which prove controversial. Leaving both
-options open may lead to wasting a lot of time in arguments.  In addition, if
-team members are only comfortable with one language, they may only be able to
-work on half of the system, which would wreck our efficiency.
-
-### Chosen: Go
-
-Thus, finding programmers with experience in both languages would be too
-difficult and we must arbitrarily pick one.  Since the system will be
-interacting with many users simultaneously, we will choose Go because of its
-superior concurrency support.
+The only language that supports all of these requirements as of today is Rust.
 
 ## Status
 Proposed
 
 ## Consequences
-Whenever choosing a language, somebody will be angry that their favorite is not
-on the list.
+The Go fans on the team will not talk to me for at least a week.  Whenever
+choosing a language, somebody will be angry that their favorite is not on the
+list.  However, Rust is commonly voted the "Most Loved" language in the Stack
+Overflow survey, so we hope that they will come to enjoy it.
 
-There are not as many programmers with experience in Go as there are in
-some other languages.  However, we are willing to accept this tradeoff to
+There are not as many programmers with experience in Rust as there are in
+some other languages.  It also takes much longer to learn than some of the other
+alternatives.  However, we are willing to accept this tradeoff to
 improve the system's quality.
-
-Go is slightly less efficient with memory allocation and runtime size than Rust.
-This will negatively impact our **Low Run Cost**.  However, the ease of learning
-Go vs. Rust should offset this additional cost by improving our time to market.
