@@ -5,8 +5,11 @@ are several popular authentication methods that could apply in this case, each
 with its own headaches.  We could adapt almost any to work with the SSHv2
 protocol, but careful consideration must be given to the options.
 
+This decision affects the **Security**, **Supportability**, **Availability**, and **Usability** of the system.
+
 ## Decision 
-We will use only native SSH Public Key authentication.
+We will use only native SSH Public Key authentication.  This is the perfect
+intersection of **Security** and **Usability** given our audience.
 
 We will associate an SSH Public Key with an account by using Trust on First Use
 (TOFU).  When an unknown key is presented to the login daemon, the user will be
@@ -29,14 +32,15 @@ being:
     * Difficult to type, especially given entropy requirements
 
 With these only a few of the glaring deficiencies of password authentication, we
-reject it as an option.
+reject it as an option, as it would be unable to give us adequate **Security**,
+and also presents major **Supportability** and **Usability** challenges.
 
 ### Rejected: OAuth2 Authentication
 OAuth2 would allow us to outsource responsibility for authenticating users to a
 third party.  However, each user would always be tied to the third party that
 the chose at sign up time.  In addition, the third parties we chose would have
 the ability to cut us off from a large portion of our users on a whim.  We deem
-this risk unacceptable and reject OAuth2 as an option.
+this an unacceptable risk to the system's **Availability**, and reject OAuth2 as an option.
 
 ### Chosen: Public Key Authentication
 The SSHv2 protocol that we are using has native support for public key
@@ -44,7 +48,8 @@ authentication.  This method is widely used and widely known by our target
 audience.  Many different clients on many different platforms support this
 method.  We will use SSH Public Key Authentication as our sole method of user
 authentication.  We will allow our users to add additional public keys to their
-account and manage those once logged in.
+account and manage those once logged in.  These are all major **Usability**
+wins at little cost.
 
 ## Status
 Accepted
@@ -52,13 +57,15 @@ Accepted
 ## Consequences
 If a user loses access to their private SSH key, they will lose access to their
 account.  This is partially mitigated by the ability to add additional public
-keys to one's account.
+keys to one's account.  This is a **Usability** challenge to keep in mind, but a
+much smaller one than presented by passwords.
 
 If a user's physical device is stolen or compromised, the security of their BBS
 account will be fully dependent on the quality of their key passphrase and other
 security measures they have taken.  We will have no control over nor awareness
 of such measures, other than suggesting good practices.  We are comfortable with
-this.
+this level of **Security** risk.
 
 Usernames do not have to be fixed at the time of account creation, since a
-public key serves as both an identity and an authenticator.
+public key serves as both an identity and an authenticator.  This is a free 
+**Usability** win.
