@@ -1,0 +1,968 @@
+{
+  "configuration" : {
+    "scope" : "SoftwareSystem"
+  },
+  "description" : "Description",
+  "documentation" : {
+    "sections" : [ {
+      "content" : "## Introduction\n\nFor this project, I chose to design a Bulletin Board System (BBS).  In the 80's\nand 90's, dial-up BBSes were the primary way to meet and communicate with other\nlocal geeks.  The rise of the Internet, and especially the World Wide Web, made\nconnectivity accessible and useful to the average person, but in my opinion, the\nmagic was lost.  Now that the Web is choking to death on its own nonsense, the\ntime is right for geeks to return to the BBS.\n\nThe main non-functional requirements of the system are:\n\n  * **Security** is the single biggest concern in this system.  Users must not\n    be able to affect each other in any way that is not designed.  There is\n    reason to suspect that our target users will try to do so anyway.\n  * **Low Run Cost** (also known as **Affordability**) is a close second.  This\n    system is intended to be funded by optional donations, which means that it\n    must be dirt cheap to run.\n  * **Responsiveness** is important to usability.  Though many of our users will\n    remember waiting for art-heavy screens to slowly trickle through their slow\n    modems, this is a bit of nostalgia that we are aiming to avoid entirely.\n  * **Extensibility** (also known as **Flexibility**) will allow us to explore\n    what a BBS can offer now with modern resources.  The ability to quickly\n    implement new functionality enables experimentation with low overhead.\n  * **Operability** is the final non-functional requirement.  Related to **Low\n    Run Cost**, the time required to run the system should be as low as we can\n    possibly make it.\n\nNotice that **Availability** is not on the list.  **Availability** is often a\ndirect tradeoff with **Low Run Cost**, which is so important in this case that\ncost concerns strictly dominate those of **Availability**.  In the event of an\noutage, we will encourage our loyal users to go outside for a while.\n\n## Overview\n\n![](embed:Context)\n\nAt the highest level, our system integrates with a payment service, for\nprocessing user donations, as well as an external document store for persistent\nstate.  All state is stored in one place to improve the **Operability** of the\nsystem.  As helpful as it might seem to use specialized storage for some use\ncase, that decision comes with a lifetime of upgrades, migrations, backups, and\nother toil that make the system as a whole more difficult to operate.\n\nNormal users, referred to here as \"Big Nerds\" in reference to the social status\nof our target demographic, are considered separately from Sysops (System\nOperators--the traditional title for one who runs a BBS).  This improves the\n**Security** of the system by vastly reducing the attack surface available for\npotential attackers.  We expect our users to be both highly technical and bored,\nso **Security** is a primary concern.\n\n## Deployment Units\n\n![](embed:Container)\n\n### WebAssembly Bridge\n\nThe most interesting part of the BBS's architecture is that most of the\ntraditional features are implemented as WebAssembly Components.  This is a win\nfor both **Security** and **Extensibility**.  The WebAssembly Bridge acts as a\nhost for these components and provides them with the services they need to\ninteract with users and persist data.\n\n![](embed:WASMBridgeComponents)\n\nWhile only a handful of functions are shown for readability, the possibilities\nare endless.  With the **Security** guarantees and near-native performance of\nWebAssembly (**Responsiveness**), most of the functionality of the BBS can be\nimplemented this way, and BBS owners can trade their favorite (hopefully Free and Open Source) in-house modules.  The efficiency also directly leads to **Low Run Cost** as we can run more functionality on fewer resources.\n\nOther components shown are developed natively where WebAssembly is not a good\noption.  For example, the Donation flow needs to run in a separate process\nbecause it handles payment data.  The other native service is the Door Game\nserver.\n\n### Door Game Server\n\nMost people who enjoyed dialing into BBSes in their heyday remember the\nimpressive array of games available.  Those BBSes were primarily DOS-powered,\nbut thanks to powerful, modern hardware, we can easily and cheaply (**Low Run\nCost**) emulate a DOS environment to bring them back to life.\n\n![](embed:DoorComponents)\n\nWe need to develop an I/O adapter to interface the old screen-based UIs with our\nfront-end APIs.  In further pursuit of **Low Run Cost**, emulators will be\nshut down when not in active use, with their state persisted to the Document\nStore.  **Security** is taken care of because the environments are entirely\nemulated, so no dormant DOS viruses will make a comeback on our watch.\n\n### Frontend\n\nThe Frontend service is the only service that directly interacts with users.\n\n![](embed:FEComponents)\n\nThe Bouncer maintains **Security** at the door by authenticating users and\nchecking that their access is consistent with policy.  For example, policies\ncould specify how long each user was allowed to log in each day.\n\nThe dynamic Menu service keeps track of what users can run at any given time.\nThis allows new functions to be added instantly, and vastly improves\n**Operability** by allowing functions to be taken offline temporarily.  By\nversioning functions, it is even possible to upgrade a function that it in use\nwithout disconnecting its users.\n\n## Conclusion\n\nHopefully this walkthrough of the architectural high points of the BBS allowed\nyou to see the interesting possibilities and how they can be achieved.\n",
+      "filename" : "intro.md",
+      "format" : "Markdown",
+      "order" : 1,
+      "title" : ""
+    } ]
+  },
+  "id" : 1,
+  "lastModifiedDate" : "2024-05-23T19:16:49Z",
+  "model" : {
+    "people" : [ {
+      "description" : "The primary users of the BBS will be giant nerds.",
+      "id" : "1",
+      "location" : "Unspecified",
+      "name" : "Big Nerd",
+      "properties" : {
+        "structurizr.dsl.identifier" : "user"
+      },
+      "relationships" : [ {
+        "description" : "SSHes into",
+        "destinationId" : "7",
+        "id" : "66",
+        "properties" : {
+          "structurizr.dsl.identifier" : "bf2a66d2-e7b4-48c8-9479-5618a1a62ac4"
+        },
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "SSHes into",
+        "destinationId" : "6",
+        "id" : "67",
+        "linkedRelationshipId" : "66",
+        "sourceId" : "1"
+      }, {
+        "description" : "SSHes into",
+        "destinationId" : "5",
+        "id" : "68",
+        "linkedRelationshipId" : "66",
+        "sourceId" : "1"
+      } ],
+      "tags" : "Element,Person"
+    }, {
+      "description" : "Maintain and operate the BBS",
+      "id" : "2",
+      "location" : "Unspecified",
+      "name" : "System Operator",
+      "properties" : {
+        "structurizr.dsl.identifier" : "sysop"
+      },
+      "relationships" : [ {
+        "description" : "Administers the System in",
+        "destinationId" : "26",
+        "id" : "27",
+        "properties" : {
+          "structurizr.dsl.identifier" : "02a2e9de-e7be-486d-829e-9df703b00ecf"
+        },
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Administers the System in",
+        "destinationId" : "5",
+        "id" : "28",
+        "linkedRelationshipId" : "27",
+        "sourceId" : "2"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "description" : "Processes donation payments.",
+      "documentation" : { },
+      "id" : "3",
+      "location" : "Unspecified",
+      "name" : "Payment Service",
+      "properties" : {
+        "structurizr.dsl.identifier" : "paymentsvc"
+      },
+      "tags" : "Element,Software System,Existing System"
+    }, {
+      "description" : "Stores all persistent state.",
+      "documentation" : { },
+      "id" : "4",
+      "location" : "Unspecified",
+      "name" : "Document Store",
+      "properties" : {
+        "structurizr.dsl.identifier" : "docdbsvc"
+      },
+      "tags" : "Element,Software System,Existing System,Database"
+    }, {
+      "containers" : [ {
+        "components" : [ {
+          "description" : "Handles user SSH sessions and performs input and output on behalf of other system components",
+          "documentation" : { },
+          "id" : "7",
+          "name" : "Multiplexer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "mux"
+          },
+          "relationships" : [ {
+            "description" : "Authenticates and Authorizes Users Sessions with",
+            "destinationId" : "8",
+            "id" : "10",
+            "properties" : {
+              "structurizr.dsl.identifier" : "2a3a7dc1-37e2-4b68-9e16-bc87239b650d"
+            },
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Checks ID at the door and enforces policy",
+          "documentation" : { },
+          "id" : "8",
+          "name" : "Bouncer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "bouncer"
+          },
+          "relationships" : [ {
+            "description" : "Offloads Authentication to",
+            "destinationId" : "11",
+            "id" : "29",
+            "properties" : {
+              "structurizr.dsl.identifier" : "bf0b540b-f574-4f4f-a2c7-8a4658670b07"
+            },
+            "sourceId" : "8",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Provides a menu of all functions that are currently available.  Functions are versioned for hot upgrade.",
+          "documentation" : { },
+          "id" : "9",
+          "name" : "Menu",
+          "properties" : {
+            "structurizr.dsl.identifier" : "menu"
+          },
+          "tags" : "Element,Component"
+        } ],
+        "description" : "The part of the system responsible for user interaction",
+        "documentation" : { },
+        "id" : "6",
+        "name" : "Front End",
+        "properties" : {
+          "structurizr.dsl.identifier" : "fe"
+        },
+        "relationships" : [ {
+          "description" : "Offloads Authentication to",
+          "destinationId" : "11",
+          "id" : "30",
+          "linkedRelationshipId" : "29",
+          "sourceId" : "6"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "description" : "Identifies and Valiadates users from their SSH keys",
+        "documentation" : { },
+        "id" : "11",
+        "name" : "Authenticator",
+        "properties" : {
+          "structurizr.dsl.identifier" : "auth"
+        },
+        "tags" : "Element,Container"
+      }, {
+        "components" : [ {
+          "description" : "A WASM Component that provides input and output from user sessions",
+          "documentation" : { },
+          "id" : "13",
+          "name" : "Screen I/O Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "wasmio"
+          },
+          "relationships" : [ {
+            "description" : "Runs in",
+            "destinationId" : "15",
+            "id" : "16",
+            "properties" : {
+              "structurizr.dsl.identifier" : "4952b1cd-878d-4f83-b3c4-89e2e57f09e2"
+            },
+            "sourceId" : "13",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Interacts with Users through",
+            "destinationId" : "7",
+            "id" : "41",
+            "properties" : {
+              "structurizr.dsl.identifier" : "e8bf2ff1-5ea7-42dc-b374-1cffe69f3f09"
+            },
+            "sourceId" : "13",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Interacts with Users through",
+            "destinationId" : "6",
+            "id" : "42",
+            "linkedRelationshipId" : "41",
+            "sourceId" : "13"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "A WASM Component that provides persistent key/value storage",
+          "documentation" : { },
+          "id" : "14",
+          "name" : "Storage Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "wasmstorage"
+          },
+          "relationships" : [ {
+            "description" : "Runs in",
+            "destinationId" : "15",
+            "id" : "17",
+            "properties" : {
+              "structurizr.dsl.identifier" : "82f13017-9863-41c1-b4f5-fe8c14c18ea2"
+            },
+            "sourceId" : "14",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Stores Plugin State in",
+            "destinationId" : "4",
+            "id" : "39",
+            "properties" : {
+              "structurizr.dsl.identifier" : "071735bb-236e-4195-90f3-b173c9d6b468"
+            },
+            "sourceId" : "14",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "The main process in which all the WASM Components will run",
+          "documentation" : { },
+          "id" : "15",
+          "name" : "WASM Host",
+          "properties" : {
+            "structurizr.dsl.identifier" : "wasmhost"
+          },
+          "tags" : "Element,Component"
+        } ],
+        "documentation" : { },
+        "id" : "12",
+        "name" : "WebAssembly Bridge",
+        "properties" : {
+          "structurizr.dsl.identifier" : "wasmbridge"
+        },
+        "relationships" : [ {
+          "description" : "Stores Plugin State in",
+          "destinationId" : "4",
+          "id" : "40",
+          "linkedRelationshipId" : "39",
+          "sourceId" : "12"
+        }, {
+          "description" : "Interacts with Users through",
+          "destinationId" : "7",
+          "id" : "43",
+          "linkedRelationshipId" : "41",
+          "sourceId" : "12"
+        }, {
+          "description" : "Interacts with Users through",
+          "destinationId" : "6",
+          "id" : "44",
+          "linkedRelationshipId" : "41",
+          "sourceId" : "12"
+        }, {
+          "description" : "Registers WASM components with",
+          "destinationId" : "9",
+          "id" : "62",
+          "properties" : {
+            "structurizr.dsl.identifier" : "f4546604-b21e-40af-9166-b8ebaf6252f3"
+          },
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "components" : [ {
+          "description" : "Maintains a list of available door games and communicates them to the main menu",
+          "documentation" : { },
+          "id" : "19",
+          "name" : "Door Game Menu",
+          "properties" : {
+            "structurizr.dsl.identifier" : "doormenu"
+          },
+          "relationships" : [ {
+            "description" : "Registers Door Games with",
+            "destinationId" : "9",
+            "id" : "63",
+            "properties" : {
+              "structurizr.dsl.identifier" : "b34397f1-d4d8-4cc1-b35e-091040cfbc04"
+            },
+            "sourceId" : "19",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Registers Door Games with",
+            "destinationId" : "6",
+            "id" : "64",
+            "linkedRelationshipId" : "63",
+            "sourceId" : "19"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Orchestrates and controls the other components",
+          "documentation" : { },
+          "id" : "20",
+          "name" : "Door Server",
+          "properties" : {
+            "structurizr.dsl.identifier" : "doorsvr"
+          },
+          "relationships" : [ {
+            "description" : "Invokes and Manages",
+            "destinationId" : "22",
+            "id" : "23",
+            "properties" : {
+              "structurizr.dsl.identifier" : "612464fe-fd58-4034-8053-4fa7409eeff9"
+            },
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Provides list of door games to",
+            "destinationId" : "19",
+            "id" : "24",
+            "properties" : {
+              "structurizr.dsl.identifier" : "158711b9-a53d-4171-93c5-dd00b288103d"
+            },
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Suspends Process State to",
+            "destinationId" : "4",
+            "id" : "36",
+            "properties" : {
+              "structurizr.dsl.identifier" : "b5b4bec1-fd66-4f4a-81ae-7f589290becb"
+            },
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Adapts the Emulator's terminal I/O to our session multiplexer",
+          "documentation" : { },
+          "id" : "21",
+          "name" : "IO Adapter",
+          "properties" : {
+            "structurizr.dsl.identifier" : "doorio"
+          },
+          "relationships" : [ {
+            "description" : "Interacts with Users through",
+            "destinationId" : "7",
+            "id" : "45",
+            "properties" : {
+              "structurizr.dsl.identifier" : "3adc8d8c-d4bf-44b1-8964-e1fa50178927"
+            },
+            "sourceId" : "21",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Interacts with Users through",
+            "destinationId" : "6",
+            "id" : "46",
+            "linkedRelationshipId" : "45",
+            "sourceId" : "21"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "One DOS Emulator process per active game.  State is suspended to storage when not in use.",
+          "documentation" : { },
+          "id" : "22",
+          "name" : "DOS Emulator",
+          "properties" : {
+            "structurizr.dsl.identifier" : "dosemu"
+          },
+          "relationships" : [ {
+            "description" : "Interacts with Users through",
+            "destinationId" : "21",
+            "id" : "25",
+            "properties" : {
+              "structurizr.dsl.identifier" : "65bb74eb-c851-4dac-90d4-5ba8d1216fda"
+            },
+            "sourceId" : "22",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        } ],
+        "description" : "Runs all of the classic door games that our users remember playing in their younger days",
+        "documentation" : { },
+        "id" : "18",
+        "name" : "Door Game Server",
+        "properties" : {
+          "structurizr.dsl.identifier" : "doors"
+        },
+        "relationships" : [ {
+          "description" : "Suspends Process State to",
+          "destinationId" : "4",
+          "id" : "37",
+          "linkedRelationshipId" : "36",
+          "sourceId" : "18"
+        }, {
+          "description" : "Interacts with Users through",
+          "destinationId" : "7",
+          "id" : "47",
+          "linkedRelationshipId" : "45",
+          "sourceId" : "18"
+        }, {
+          "description" : "Interacts with Users through",
+          "destinationId" : "6",
+          "id" : "48",
+          "linkedRelationshipId" : "45",
+          "sourceId" : "18"
+        }, {
+          "description" : "Registers Door Games with",
+          "destinationId" : "9",
+          "id" : "65",
+          "linkedRelationshipId" : "63",
+          "sourceId" : "18"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "description" : "Completely separate from user-accessible components for maximum security",
+        "documentation" : { },
+        "id" : "26",
+        "name" : "System Operation UI",
+        "properties" : {
+          "structurizr.dsl.identifier" : "sysoppanel"
+        },
+        "tags" : "Element,Container"
+      }, {
+        "description" : "Provides the UI for a user to donate by credit card without leaving the terminal",
+        "documentation" : { },
+        "id" : "31",
+        "name" : "Donation Flow",
+        "properties" : {
+          "structurizr.dsl.identifier" : "donation"
+        },
+        "relationships" : [ {
+          "description" : "Processes Payments through",
+          "destinationId" : "3",
+          "id" : "32",
+          "properties" : {
+            "structurizr.dsl.identifier" : "f8dec152-bc73-4618-bf56-9ae714378f7b"
+          },
+          "sourceId" : "31",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Interacts with Users through",
+          "destinationId" : "7",
+          "id" : "34",
+          "properties" : {
+            "structurizr.dsl.identifier" : "11e2f97a-83a2-442c-9156-5334a3086a5a"
+          },
+          "sourceId" : "31",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Interacts with Users through",
+          "destinationId" : "6",
+          "id" : "35",
+          "linkedRelationshipId" : "34",
+          "sourceId" : "31"
+        }, {
+          "description" : "Registers with",
+          "destinationId" : "9",
+          "id" : "61",
+          "properties" : {
+            "structurizr.dsl.identifier" : "981f54c5-022d-405a-822e-a878b9c1a8ae"
+          },
+          "sourceId" : "31",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "description" : "Allows users to edit and display their custom profile, and view other users profiles.",
+        "documentation" : { },
+        "id" : "49",
+        "name" : "User Profile",
+        "properties" : {
+          "structurizr.dsl.identifier" : "profile"
+        },
+        "relationships" : [ {
+          "description" : "Runs as a Component in",
+          "destinationId" : "15",
+          "id" : "53",
+          "properties" : {
+            "structurizr.dsl.identifier" : "d60a6710-2ea3-4cee-9b1f-4ddfef96c4f2"
+          },
+          "sourceId" : "49",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Runs as a Component in",
+          "destinationId" : "12",
+          "id" : "54",
+          "linkedRelationshipId" : "53",
+          "sourceId" : "49"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "description" : "Asynchronous, threaded, public messaging, separated into broad topic fora.",
+        "documentation" : { },
+        "id" : "50",
+        "name" : "Forum",
+        "properties" : {
+          "structurizr.dsl.identifier" : "forum"
+        },
+        "relationships" : [ {
+          "description" : "Runs as a Component in",
+          "destinationId" : "15",
+          "id" : "55",
+          "properties" : {
+            "structurizr.dsl.identifier" : "9e337b66-85e3-4674-a014-5653e10eb0c0"
+          },
+          "sourceId" : "50",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Runs as a Component in",
+          "destinationId" : "12",
+          "id" : "56",
+          "linkedRelationshipId" : "55",
+          "sourceId" : "50"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "description" : "Asynchronous, private messaging.",
+        "documentation" : { },
+        "id" : "51",
+        "name" : "Mail",
+        "properties" : {
+          "structurizr.dsl.identifier" : "mail"
+        },
+        "relationships" : [ {
+          "description" : "Runs as a Component in",
+          "destinationId" : "15",
+          "id" : "57",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ef058148-085f-441e-b150-67f5669ef0f7"
+          },
+          "sourceId" : "51",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Runs as a Component in",
+          "destinationId" : "12",
+          "id" : "58",
+          "linkedRelationshipId" : "57",
+          "sourceId" : "51"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "description" : "Real-time chat.",
+        "documentation" : { },
+        "id" : "52",
+        "name" : "Chat",
+        "properties" : {
+          "structurizr.dsl.identifier" : "chat"
+        },
+        "relationships" : [ {
+          "description" : "Runs as a Component in",
+          "destinationId" : "15",
+          "id" : "59",
+          "properties" : {
+            "structurizr.dsl.identifier" : "f4ec01bc-e8f9-4339-a3bb-7506dbea6f4c"
+          },
+          "sourceId" : "52",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Runs as a Component in",
+          "destinationId" : "12",
+          "id" : "60",
+          "linkedRelationshipId" : "59",
+          "sourceId" : "52"
+        } ],
+        "tags" : "Element,Container"
+      } ],
+      "description" : "A Bulletin Board System, similar in functionality to those that dominated the online world in the '80s and '90s, but with modern architecture and performance",
+      "documentation" : { },
+      "id" : "5",
+      "location" : "Unspecified",
+      "name" : "BBS",
+      "properties" : {
+        "structurizr.dsl.identifier" : "bbs"
+      },
+      "relationships" : [ {
+        "description" : "Processes Payments through",
+        "destinationId" : "3",
+        "id" : "33",
+        "linkedRelationshipId" : "32",
+        "sourceId" : "5"
+      }, {
+        "description" : "Suspends Process State to",
+        "destinationId" : "4",
+        "id" : "38",
+        "linkedRelationshipId" : "36",
+        "sourceId" : "5"
+      } ],
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "GeekBBS",
+  "properties" : {
+    "structurizr.dsl" : "d29ya3NwYWNlICJHZWVrQkJTIiB7CgogICAgbW9kZWwgewogICAgICAgICMgQ2FzdCBvZiBDaGFyYWN0ZXJzCiAgICAgICAgdXNlciA9IHBlcnNvbiAiQmlnIE5lcmQiICJUaGUgcHJpbWFyeSB1c2VycyBvZiB0aGUgQkJTIHdpbGwgYmUgZ2lhbnQgbmVyZHMuIgogICAgICAgIHN5c29wID0gcGVyc29uICJTeXN0ZW0gT3BlcmF0b3IiICJNYWludGFpbiBhbmQgb3BlcmF0ZSB0aGUgQkJTIgoKICAgICAgICAjIEV4dGVybmFsIFN5c3RlbXMKICAgICAgICBwYXltZW50U3ZjID0gc29mdHdhcmVTeXN0ZW0gIlBheW1lbnQgU2VydmljZSIgIlByb2Nlc3NlcyBkb25hdGlvbiBwYXltZW50cy4iICJFeGlzdGluZyBTeXN0ZW0iCgogICAgICAgIGRvY0RCU3ZjID0gc29mdHdhcmVTeXN0ZW0gIkRvY3VtZW50IFN0b3JlIiAiU3RvcmVzIGFsbCBwZXJzaXN0ZW50IHN0YXRlLiIgIkV4aXN0aW5nIFN5c3RlbSxEYXRhYmFzZSIKCiAgICAgICAgYmJzID0gc29mdHdhcmVTeXN0ZW0gIkJCUyIgIkEgQnVsbGV0aW4gQm9hcmQgU3lzdGVtLCBzaW1pbGFyIGluIGZ1bmN0aW9uYWxpdHkgdG8gdGhvc2UgdGhhdCBkb21pbmF0ZWQgdGhlIG9ubGluZSB3b3JsZCBpbiB0aGUgJzgwcyBhbmQgJzkwcywgYnV0IHdpdGggbW9kZXJuIGFyY2hpdGVjdHVyZSBhbmQgcGVyZm9ybWFuY2UiIHsKICAgICAgICAgICAgZmUgPSBjb250YWluZXIgIkZyb250IEVuZCIgIlRoZSBwYXJ0IG9mIHRoZSBzeXN0ZW0gcmVzcG9uc2libGUgZm9yIHVzZXIgaW50ZXJhY3Rpb24iewogICAgICAgICAgICAgICAgbXV4ICA9IGNvbXBvbmVudCAiTXVsdGlwbGV4ZXIiICJIYW5kbGVzIHVzZXIgU1NIIHNlc3Npb25zIGFuZCBwZXJmb3JtcyBpbnB1dCBhbmQgb3V0cHV0IG9uIGJlaGFsZiBvZiBvdGhlciBzeXN0ZW0gY29tcG9uZW50cyIKICAgICAgICAgICAgICAgIGJvdW5jZXIgPSBjb21wb25lbnQgIkJvdW5jZXIiICJDaGVja3MgSUQgYXQgdGhlIGRvb3IgYW5kIGVuZm9yY2VzIHBvbGljeSIKICAgICAgICAgICAgICAgIG1lbnUgPSBjb21wb25lbnQgIk1lbnUiICJQcm92aWRlcyBhIG1lbnUgb2YgYWxsIGZ1bmN0aW9ucyB0aGF0IGFyZSBjdXJyZW50bHkgYXZhaWxhYmxlLiAgRnVuY3Rpb25zIGFyZSB2ZXJzaW9uZWQgZm9yIGhvdCB1cGdyYWRlLiIKCiAgICAgICAgICAgICAgICBtdXggLT4gYm91bmNlciAiQXV0aGVudGljYXRlcyBhbmQgQXV0aG9yaXplcyBVc2VycyBTZXNzaW9ucyB3aXRoIgogICAgICAgICAgICB9ICAgCgogICAgICAgICAgICBhdXRoID0gICAgIGNvbnRhaW5lciAiQXV0aGVudGljYXRvciIgIklkZW50aWZpZXMgYW5kIFZhbGlhZGF0ZXMgdXNlcnMgZnJvbSB0aGVpciBTU0gga2V5cyIKICAgICAgICAgICAgd2FzbWJyaWRnZSA9IGNvbnRhaW5lciAiV2ViQXNzZW1ibHkgQnJpZGdlIiB7CiAgICAgICAgICAgICAgICB3YXNtSU8gPSBjb21wb25lbnQgIlNjcmVlbiBJL08gQ29tcG9uZW50IiAiQSBXQVNNIENvbXBvbmVudCB0aGF0IHByb3ZpZGVzIGlucHV0IGFuZCBvdXRwdXQgZnJvbSB1c2VyIHNlc3Npb25zIgogICAgICAgICAgICAgICAgd2FzbVN0b3JhZ2UgPSBjb21wb25lbnQgIlN0b3JhZ2UgQ29tcG9uZW50IiAiQSBXQVNNIENvbXBvbmVudCB0aGF0IHByb3ZpZGVzIHBlcnNpc3RlbnQga2V5L3ZhbHVlIHN0b3JhZ2UiCiAgICAgICAgICAgICAgICB3YXNtSG9zdCA9IGNvbXBvbmVudCAiV0FTTSBIb3N0IiAiVGhlIG1haW4gcHJvY2VzcyBpbiB3aGljaCBhbGwgdGhlIFdBU00gQ29tcG9uZW50cyB3aWxsIHJ1biIKCiAgICAgICAgICAgICAgICB3YXNtSU8gLT4gd2FzbUhvc3QgIlJ1bnMgaW4iCiAgICAgICAgICAgICAgICB3YXNtU3RvcmFnZSAtPiB3YXNtSG9zdCAiUnVucyBpbiIKICAgICAgICAgICAgfQogICAgICAgICAgICBkb29ycyA9ICAgIGNvbnRhaW5lciAiRG9vciBHYW1lIFNlcnZlciIgIlJ1bnMgYWxsIG9mIHRoZSBjbGFzc2ljIGRvb3IgZ2FtZXMgdGhhdCBvdXIgdXNlcnMgcmVtZW1iZXIgcGxheWluZyBpbiB0aGVpciB5b3VuZ2VyIGRheXMiewogICAgICAgICAgICAgICAgZG9vcm1lbnUgPSBjb21wb25lbnQgIkRvb3IgR2FtZSBNZW51IiAiTWFpbnRhaW5zIGEgbGlzdCBvZiBhdmFpbGFibGUgZG9vciBnYW1lcyBhbmQgY29tbXVuaWNhdGVzIHRoZW0gdG8gdGhlIG1haW4gbWVudSIKICAgICAgICAgICAgICAgIGRvb3JzdnIgPSBjb21wb25lbnQgIkRvb3IgU2VydmVyIiAiT3JjaGVzdHJhdGVzIGFuZCBjb250cm9scyB0aGUgb3RoZXIgY29tcG9uZW50cyIKICAgICAgICAgICAgICAgIGRvb3JpbyA9IGNvbXBvbmVudCAiSU8gQWRhcHRlciIgIkFkYXB0cyB0aGUgRW11bGF0b3IncyB0ZXJtaW5hbCBJL08gdG8gb3VyIHNlc3Npb24gbXVsdGlwbGV4ZXIiCiAgICAgICAgICAgICAgICBkb3NlbXUgPSAgY29tcG9uZW50ICJET1MgRW11bGF0b3IiICJPbmUgRE9TIEVtdWxhdG9yIHByb2Nlc3MgcGVyIGFjdGl2ZSBnYW1lLiAgU3RhdGUgaXMgc3VzcGVuZGVkIHRvIHN0b3JhZ2Ugd2hlbiBub3QgaW4gdXNlLiIKCiAgICAgICAgICAgICAgICBkb29yc3ZyIC0+IGRvc2VtdSAiSW52b2tlcyBhbmQgTWFuYWdlcyIKICAgICAgICAgICAgICAgIGRvb3JzdnIgLT4gZG9vcm1lbnUgIlByb3ZpZGVzIGxpc3Qgb2YgZG9vciBnYW1lcyB0byIKICAgICAgICAgICAgICAgIGRvc2VtdSAtPiBkb29yaW8gIkludGVyYWN0cyB3aXRoIFVzZXJzIHRocm91Z2giCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIHN5c29wUGFuZWwgPSBjb250YWluZXIgIlN5c3RlbSBPcGVyYXRpb24gVUkiICJDb21wbGV0ZWx5IHNlcGFyYXRlIGZyb20gdXNlci1hY2Nlc3NpYmxlIGNvbXBvbmVudHMgZm9yIG1heGltdW0gc2VjdXJpdHkiCgogICAgICAgICAgICBzeXNvcCAtPiBzeXNvcFBhbmVsICJBZG1pbmlzdGVycyB0aGUgU3lzdGVtIGluIgoKICAgICAgICAgICAgYm91bmNlciAtPiBhdXRoICJPZmZsb2FkcyBBdXRoZW50aWNhdGlvbiB0byIKCiAgICAgICAgICAgIGRvbmF0aW9uID0gY29udGFpbmVyICJEb25hdGlvbiBGbG93IiAiUHJvdmlkZXMgdGhlIFVJIGZvciBhIHVzZXIgdG8gZG9uYXRlIGJ5IGNyZWRpdCBjYXJkIHdpdGhvdXQgbGVhdmluZyB0aGUgdGVybWluYWwiCiAgICAgICAgICAgIGRvbmF0aW9uIC0+IHBheW1lbnRTdmMgIlByb2Nlc3NlcyBQYXltZW50cyB0aHJvdWdoIgogICAgICAgICAgICBkb25hdGlvbiAtPiBtdXggIkludGVyYWN0cyB3aXRoIFVzZXJzIHRocm91Z2giCgogICAgICAgICAgICBkb29yc3ZyIC0+IGRvY2RiU3ZjICJTdXNwZW5kcyBQcm9jZXNzIFN0YXRlIHRvIgogICAgICAgICAgICB3YXNtU3RvcmFnZSAtPiBkb2NkYlN2YyAiU3RvcmVzIFBsdWdpbiBTdGF0ZSBpbiIKICAgICAgICAgICAgd2FzbUlPIC0+IG11eCAiSW50ZXJhY3RzIHdpdGggVXNlcnMgdGhyb3VnaCIKICAgICAgICAgICAgZG9vcklPIC0+IG11eCAiSW50ZXJhY3RzIHdpdGggVXNlcnMgdGhyb3VnaCIKCiAgICAgICAgICAgICMgVGhlIEJCUyBzY3JlZW4gaW1wbGVtZW50YXRpb25zCiAgICAgICAgICAgIHByb2ZpbGUgPSAgY29udGFpbmVyICJVc2VyIFByb2ZpbGUiICJBbGxvd3MgdXNlcnMgdG8gZWRpdCBhbmQgZGlzcGxheSB0aGVpciBjdXN0b20gcHJvZmlsZSwgYW5kIHZpZXcgb3RoZXIgdXNlcnMgcHJvZmlsZXMuIgogICAgICAgICAgICBmb3J1bSA9ICAgIGNvbnRhaW5lciAiRm9ydW0iICJBc3luY2hyb25vdXMsIHRocmVhZGVkLCBwdWJsaWMgbWVzc2FnaW5nLCBzZXBhcmF0ZWQgaW50byBicm9hZCB0b3BpYyBmb3JhLiIgCiAgICAgICAgICAgIG1haWwgPSAgICAgY29udGFpbmVyICJNYWlsIiAiQXN5bmNocm9ub3VzLCBwcml2YXRlIG1lc3NhZ2luZy4iIAogICAgICAgICAgICBjaGF0ID0gICAgIGNvbnRhaW5lciAiQ2hhdCIgIlJlYWwtdGltZSBjaGF0LiIKCiAgICAgICAgICAgIHByb2ZpbGUgLT4gd2FzbUhvc3QgIlJ1bnMgYXMgYSBDb21wb25lbnQgaW4iCiAgICAgICAgICAgIGZvcnVtIC0+IHdhc21Ib3N0ICJSdW5zIGFzIGEgQ29tcG9uZW50IGluIgogICAgICAgICAgICBtYWlsIC0+IHdhc21Ib3N0ICJSdW5zIGFzIGEgQ29tcG9uZW50IGluIgogICAgICAgICAgICBjaGF0IC0+IHdhc21Ib3N0ICJSdW5zIGFzIGEgQ29tcG9uZW50IGluIgogICAgICAgICAgICAKICAgICAgICAgICAgZG9uYXRpb24gICAtPiBtZW51ICJSZWdpc3RlcnMgd2l0aCIKICAgICAgICAgICAgd2FzbWJyaWRnZSAtPiBtZW51ICJSZWdpc3RlcnMgV0FTTSBjb21wb25lbnRzIHdpdGgiCiAgICAgICAgICAgIGRvb3JtZW51ICAgLT4gbWVudSAiUmVnaXN0ZXJzIERvb3IgR2FtZXMgd2l0aCIKCiAgICAgICAgICAgICMgV2hhdCB0aGUgcGVvcGxlIGRvaW5nPwogICAgICAgICAgICB1c2VyIC0+IG11eCAiU1NIZXMgaW50byIKICAgICAgICAKICAgICAgICB9ICAgCgogICAgfQoKICAgIHZpZXdzIHsKICAgICAgICBzeXN0ZW1Db250ZXh0IGJicyAiQ29udGV4dCIgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgYXV0b2xheW91dAogICAgICAgIH0KCiAgICAgICAgY29udGFpbmVyIGJicyAiQ29udGFpbmVyIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgIH0KCiAgICAgICAgY29tcG9uZW50IGZlICJGRUNvbXBvbmVudHMiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgfQoKICAgICAgICBjb21wb25lbnQgZG9vcnMgIkRvb3JDb21wb25lbnRzIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfSAgIAoKICAgICAgICBjb21wb25lbnQgd2FzbWJyaWRnZSAiV0FTTUJyaWRnZUNvbXBvbmVudHMiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgfQoKICAgICAgICBzdHlsZXMgewogICAgICAgICAgICBlbGVtZW50ICJQZXJzb24iIHsKICAgICAgICAgICAgICAgIHNoYXBlIHBlcnNvbgogICAgICAgICAgICB9CgogICAgICAgICAgICBlbGVtZW50ICJEYXRhYmFzZSIgewogICAgICAgICAgICAgICAgc2hhcGUgQ3lsaW5kZXIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgZWxlbWVudCAiRXhpc3RpbmcgU3lzdGVtIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICM5OTk5OTkKICAgICAgICAgICAgICAgIGNvbG9yICNmZmZmZmYKICAgICAgICAgICAgfQogICAgICAgIH0KICAgICAgICAKICAgICAgICB0aGVtZSBkZWZhdWx0CiAgICB9CgogICAgY29uZmlndXJhdGlvbiB7CiAgICAgICAgc2NvcGUgc29mdHdhcmVzeXN0ZW0KICAgIH0KCiAgICAhZG9jcyAibWQiCgp9Cg=="
+  },
+  "views" : {
+    "componentViews" : [ {
+      "containerId" : "6",
+      "dimensions" : {
+        "height" : 2286,
+        "width" : 2585
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 200,
+        "y" : 815
+      }, {
+        "id" : "7",
+        "x" : 1020,
+        "y" : 870
+      }, {
+        "id" : "8",
+        "x" : 1010,
+        "y" : 220
+      }, {
+        "id" : "9",
+        "x" : 1075,
+        "y" : 1695
+      }, {
+        "id" : "11",
+        "x" : 1915,
+        "y" : 235
+      }, {
+        "id" : "12",
+        "x" : 1915,
+        "y" : 1130
+      }, {
+        "id" : "18",
+        "x" : 1920,
+        "y" : 680
+      }, {
+        "id" : "31",
+        "x" : 1935,
+        "y" : 1740
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "FEComponents",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "10"
+      }, {
+        "id" : "29",
+        "vertices" : [ {
+          "x" : 1610,
+          "y" : 355
+        } ]
+      }, {
+        "id" : "34",
+        "vertices" : [ {
+          "x" : 1865,
+          "y" : 1685
+        } ]
+      }, {
+        "id" : "43"
+      }, {
+        "id" : "47"
+      }, {
+        "id" : "61"
+      }, {
+        "id" : "62"
+      }, {
+        "id" : "65"
+      }, {
+        "id" : "66"
+      } ]
+    }, {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "18",
+      "elements" : [ {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "19",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "20",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "21",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "DoorComponents",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "23"
+      }, {
+        "id" : "24"
+      }, {
+        "id" : "25"
+      }, {
+        "id" : "36"
+      }, {
+        "id" : "46"
+      }, {
+        "id" : "64"
+      } ]
+    }, {
+      "containerId" : "12",
+      "dimensions" : {
+        "height" : 2941,
+        "width" : 2935
+      },
+      "elements" : [ {
+        "id" : "4",
+        "x" : 199,
+        "y" : 2440
+      }, {
+        "id" : "6",
+        "x" : 334,
+        "y" : 199
+      }, {
+        "id" : "13",
+        "x" : 273,
+        "y" : 888
+      }, {
+        "id" : "14",
+        "x" : 259,
+        "y" : 1645
+      }, {
+        "id" : "15",
+        "x" : 1109,
+        "y" : 1250
+      }, {
+        "id" : "49",
+        "x" : 2284,
+        "y" : 805
+      }, {
+        "id" : "50",
+        "x" : 2274,
+        "y" : 1169
+      }, {
+        "id" : "51",
+        "x" : 2269,
+        "y" : 1880
+      }, {
+        "id" : "52",
+        "x" : 2279,
+        "y" : 1549
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "WASMBridgeComponents",
+      "order" : 5,
+      "relationships" : [ {
+        "id" : "16"
+      }, {
+        "id" : "17"
+      }, {
+        "id" : "39",
+        "vertices" : [ {
+          "x" : 463,
+          "y" : 2108
+        }, {
+          "x" : 418,
+          "y" : 2318
+        } ]
+      }, {
+        "id" : "42",
+        "vertices" : [ {
+          "x" : 534,
+          "y" : 799
+        } ]
+      }, {
+        "id" : "53"
+      }, {
+        "id" : "55",
+        "vertices" : [ {
+          "x" : 1924,
+          "y" : 1389
+        } ]
+      }, {
+        "id" : "57",
+        "vertices" : [ {
+          "x" : 1909,
+          "y" : 1854
+        } ]
+      }, {
+        "id" : "59",
+        "vertices" : [ {
+          "x" : 2049,
+          "y" : 1624
+        } ]
+      } ]
+    } ],
+    "configuration" : {
+      "branding" : { },
+      "lastSavedView" : "DoorComponents",
+      "styles" : {
+        "elements" : [ {
+          "shape" : "Person",
+          "tag" : "Person"
+        }, {
+          "shape" : "Cylinder",
+          "tag" : "Database"
+        }, {
+          "background" : "#999999",
+          "color" : "#ffffff",
+          "tag" : "Existing System"
+        } ]
+      },
+      "terminology" : { },
+      "themes" : [ "https://static.structurizr.com/themes/default/theme.json" ]
+    },
+    "containerViews" : [ {
+      "dimensions" : {
+        "height" : 1973,
+        "width" : 3508
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 5,
+        "y" : 35
+      }, {
+        "id" : "2",
+        "x" : 15,
+        "y" : 1010
+      }, {
+        "id" : "3",
+        "x" : 3015,
+        "y" : 305
+      }, {
+        "id" : "4",
+        "x" : 3005,
+        "y" : 1130
+      }, {
+        "id" : "6",
+        "x" : 510,
+        "y" : 315
+      }, {
+        "id" : "11",
+        "x" : 510,
+        "y" : 770
+      }, {
+        "id" : "12",
+        "x" : 1520,
+        "y" : 1030
+      }, {
+        "id" : "18",
+        "x" : 1530,
+        "y" : 675
+      }, {
+        "id" : "26",
+        "x" : 680,
+        "y" : 1120
+      }, {
+        "id" : "31",
+        "x" : 1530,
+        "y" : 320
+      }, {
+        "id" : "49",
+        "x" : 2355,
+        "y" : 1655
+      }, {
+        "id" : "50",
+        "x" : 1320,
+        "y" : 1635
+      }, {
+        "id" : "51",
+        "x" : 1835,
+        "y" : 1640
+      }, {
+        "id" : "52",
+        "x" : 820,
+        "y" : 1635
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "Container",
+      "order" : 2,
+      "paperSize" : "Slide_16_9",
+      "relationships" : [ {
+        "id" : "27"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "40"
+      }, {
+        "id" : "44"
+      }, {
+        "id" : "48"
+      }, {
+        "id" : "54"
+      }, {
+        "id" : "56"
+      }, {
+        "id" : "58"
+      }, {
+        "id" : "60"
+      }, {
+        "id" : "67"
+      } ],
+      "softwareSystemId" : "5"
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "Context",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "28"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "68"
+      } ],
+      "softwareSystemId" : "5"
+    } ]
+  }
+}
